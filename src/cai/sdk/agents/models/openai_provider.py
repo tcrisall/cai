@@ -68,13 +68,28 @@ class OpenAIProvider(ModelProvider):
     # AsyncOpenAI() raises an error if you don't have an API key set.
     def _get_client(self) -> AsyncOpenAI:
         if self._client is None:
-            self._client = _openai_shared.get_default_openai_client() or AsyncOpenAI(
-                api_key=self._stored_api_key or _openai_shared.get_default_openai_key(),
-                base_url=self._stored_base_url,
-                organization=self._stored_organization,
-                project=self._stored_project,
-                http_client=shared_http_client(),
-            )
+            # Detect if base_url looks like Azure OpenAI
+            is_azure = self._stored_base_url is not None and ".openai.azure.com" in self._stored_base_url
+            # Read Azure API version from environment if Azure
+            azure_api_version = None
+            if is_azure:
+                import os
+                azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+
+            # Prepare kwargs for AsyncOpenAI
+            client_kwargs = {
+                "api_key": self._stored_api_key or _openai_shared.get_default_openai_key(),
+                "base_url": self._stored_base_url,
+                "organization": self._stored_organization,
+                "project": self._stored_project,
+                "http_client": shared_http_client(),
+            }
+
+            # Add api_version if Azure and version is set
+            if is_azure and azure_api_version is not None:
+                client_kwargs["api_version"] = azure_api_version
+
+            self._client = _openai_shared.get_default_openai_client() or AsyncOpenAI(**client_kwargs)
 
         return self._client
 
