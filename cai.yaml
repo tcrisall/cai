@@ -1,0 +1,63 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cai
+  namespace: ai
+  labels:
+    app: cai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cai
+  template:
+    metadata:
+      labels:
+        app: cai
+    spec:
+      nodeSelector:
+        nvidia.com/gpu: "true"
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      runtimeClassName: nvidia
+      containers:
+        - name: cai
+          image: registry.home:5000/cai-test:latest
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          ports:
+            - containerPort: 22
+          env:
+            - name: NEXT_PUBLIC_IS_ON_PREM
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cai-lbsvc
+  namespace: ai
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.100.86"
+    metallb.universe.tf/allow-shared-ip: "tv-stack"
+spec:
+  type: LoadBalancer
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  selector:
+    app: cai
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: 22
+
+

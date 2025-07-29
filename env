@@ -1,0 +1,11 @@
+OPENAI_API_KEY="sk-blah"
+ANTHROPIC_API_KEY=""
+#OLLAMA_API_BASE="http://192.168.100.86:8786/v1/sk-helicone-k7gwrky-ue6usny-xqmc37i-uxraw7i"
+#CAI_MODEL="llama3.1:latest"
+PROMPT_TOOLKIT_NO_CPR=1
+CAI_STREAM=false
+
+OLLAMA_API_BASE="http://bogus.openai.azure.com@192.168.100.86:8785/sk-helicone-k7gwrky-ue6usny-xqmc37i-uxraw7i/openai/deployments/gpt-4.1-mini/"
+AZURE_OPENAI_API_VERSION="2025-01-01-preview"
+CAI_MODEL="gpt-4.1-mini"
+
